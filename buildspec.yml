@@ -51,7 +51,7 @@ phases:
       - docker build --build-arg CERT_DIR=certs -t $ECR_REPO_SERVER:server -f grpc_demo/Dockerfile.server grpc_demo
       - docker tag $ECR_REPO_SERVER:server $REPO_URI_SERVER:server
       - echo "Construyendo Docker image service-client"
-      - docker build --build-arg CERT_DIR=certs -t $ECR_REPO_CLIENT:client -f grpc_demo/Dockerfile.client grpc
+      - docker build --build-arg CERT_DIR=certs -t $ECR_REPO_CLIENT:client -f grpc_demo/Dockerfile.client grpc_demo
       - docker tag $ECR_REPO_CLIENT:client $REPO_URI_CLIENT:client
 
   post_build:
