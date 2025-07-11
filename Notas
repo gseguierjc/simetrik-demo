@@ -22,3 +22,18 @@ kubectl -n grpc-demo-server rollout restart deployment service-server
 
 
 
+
+# probar localmente 
+
+aws ecr get-login-password --region us-east-1\
+  | docker login --username AWS --password-stdin 647187952873.dkr.ecr.us-east-1.amazonaws.com
+
+# etiqueta:server es el tag que usaste en tu buildspec
+docker pull 647187952873.dkr.ecr.us-east-1.amazonaws.com/demo-app:server
+
+
+docker run -d \
+  -p 50051:50051 \
+  -v $(pwd)/server.crt:/app/server.crt \
+  -v $(pwd)/server.key:/app/server.key \
+647187952873.dkr.ecr.us-east-1.amazonaws.com/demo-app:server

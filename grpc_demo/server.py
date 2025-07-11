@@ -3,10 +3,11 @@ import sys
 from concurrent import futures
 
 # Para que Python encuentre el paquete generado bajo 'generated/'
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'generated'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "generated"))
 
 import grpc
-from .generated.saludo import saludo_pb2, saludo_pb2_grpc
+import saludo.saludo_pb2      as saludo_pb2
+import saludo.saludo_pb2_grpc as saludo_pb2_grpc
 
 class Saludador(saludo_pb2_grpc.SaludadorServicer):
     def Saludar(self, request, context):
@@ -19,9 +20,9 @@ def serve():
     saludo_pb2_grpc.add_SaludadorServicer_to_server(Saludador(), server)
 
     # Carga clave privada y certificado (auto-firmado)
-    with open("server.key", "rb") as f:
+    with open("certs/server.key", "rb") as f:
         private_key = f.read()
-    with open("server.crt", "rb") as f:
+    with open("certs/server.crt", "rb") as f:
         certificate_chain = f.read()
 
     # Credenciales TLS
