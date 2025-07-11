@@ -1,0 +1,111 @@
+---
+version: 0.2
+
+env:
+  variables:
+    AWS_ACCOUNT_ID: "647187952873"
+    AWS_DEFAULT_REGION: "us-east-1"
+    ECR_REPO_SERVER: "python-service-server"
+    ECR_REPO_CLIENT: "python-service-client"
+    GIT_REPO_URL: "https://github.com/gseguierjc/simetrik-demo"
+    GIT_BRANCH: "main"
+
+# IMPORTANTE: Asegúrate de que este archivo use finales de línea LF.
+# Para convertir usa: sed -i 's/\r$//' buildspec.yml
+
+phases:
+  pre_build:
+    commands:
+      - echo "==> Instalar git si no está presente"
+      - yum install -y git || echo "git ya instalado"
+      - echo "==> Sparse-checkout de carpeta grpc"
+      - mkdir project && cd project
+      - git init
+      - git remote add origin $GIT_REPO_URL
+      - git config core.sparseCheckout true
+      - printf 'grpc/*' >> .git/info/sparse-checkout
+      - git pull --depth=1 origin $GIT_BRANCH
+      - cd ..
+      - mv project/grpc grpc
+      - rm -rf project
+      - echo "==> Login en Amazon ECR"
+      - aws ecr get-login-password \
+        --region $AWS_DEFAULT_REGION \
+        | docker login --username AWS \
+          --password-stdin \
+          $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - echo "==> Definir URIs de repositorios"
+      - REPO_URI_SERVER=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_SERVER
+      - REPO_URI_CLIENT=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_CLIENT
+      - echo "==> Generar CA y certificados TLS"
+      - mkdir -p certs
+      # CA
+      - openssl genrsa -out certs/ca.key 2048
+      - openssl req -x509 -new -nodes -key certs/ca.key \
+        -sha256 -days 365 \
+        -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=MyCA" \
+        -out certs/ca.crt
+      # server
+      - openssl genrsa -out certs/service-server.key 2048
+      - openssl req -new -key certs/service-server.key \
+        -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-server" \
+        -out certs/service-server.csr
+      - openssl x509 -req -in certs/service-server.csr \
+        -CA certs/ca.crt \
+        -CAkey certs/ca.key \
+        -CAcreateserial \
+        -days 365 \
+        -sha256 \
+        -out certs/service-server.crt
+      # client
+      - openssl genrsa -out certs/service-client.key 2048
+      - openssl req -new -key certs/service-client.key \
+        -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-client" \
+        -out certs/service-client.csr
+      - openssl x509 -req -in certs/service-client.csr \
+        -CA certs/ca.crt \
+        -CAkey certs/ca.key \
+        -CAcreateserial \
+        -days 365 \
+        -sha256 \
+        -out certs/service-client.crt
+
+  build:
+    commands:
+      - echo "==> Build Docker image: service-server"
+      - docker build \
+        --build-arg CERT_DIR=certs \
+        -t $ECR_REPO_SERVER \
+        grpc \
+        -f grpc/Dockerfile.server
+      - docker tag \
+        $ECR_REPO_SERVER:latest \
+        $REPO_URI_SERVER:latest
+      - echo "==> Build Docker image: service-client"
+      - docker build \
+        --build-arg CERT_DIR=certs \
+        -t $ECR_REPO_CLIENT \
+        grpc \
+        -f grpc/Dockerfile.client
+      - docker tag \
+        $ECR_REPO_CLIENT:latest \
+        $REPO_URI_CLIENT:latest
+
+  post_build:
+    commands:
+      - echo "==> Pushing images to ECR"
+      - docker push $REPO_URI_SERVER:latest
+      - docker push $REPO_URI_CLIENT:latest
+      - echo "==> Crear imagedefinitions.json"
+      - |
+        printf '[{"name":"service-server","imageUri":"%s"}]' \
+        $REPO_URI_SERVER:latest \
+        > imagedefinitions.json
+      - |
+        printf '[{"name":"service-client","imageUri":"%s"}]' \
+        $REPO_URI_CLIENT:latest \
+        >> imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json

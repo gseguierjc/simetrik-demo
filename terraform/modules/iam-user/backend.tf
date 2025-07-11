@@ -1,5 +1,5 @@
 terraform {
-  backend "iam-role" {
+  backend "s3" {
     bucket         = "demo-eks-state-bucket-647187952873-7632948f"      
     key            = "iam/terraform.tfstate"   # cambia por "ci/terraform.tfstate" 
     region         = "us-east-1"

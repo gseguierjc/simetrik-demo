@@ -22,7 +22,7 @@ data "terraform_remote_state" "iam-role" {
   backend = "s3"
   config = {
     bucket = "demo-eks-state-bucket-647187952873-7632948f"
-    key    = "network/terraform.tfstate"
+    key    = "iam/terraform.tfstate"
     region = "us-east-1"
   }
 }
@@ -61,7 +61,7 @@ module "eks_cluster" {
 
  access_entries = {
     jean = {
-      principal_arn = data.terraform_remote_state.iam-role.outputs.user_arn
+      principal_arn = "arn:aws:iam::647187952873:user/terraform-demo-user"
       policy_associations = {
         admin = {
           policy_arn   = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"

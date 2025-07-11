@@ -1,6 +1,0 @@
-buildspec = "buildspec.yml"
-github_repo = "https://github.com/gseguierjc/test"
-cluster_endpoint = "https://129A25EBE8FB131A13B3C5429C36403E.gr7.us-east-1.eks.amazonaws.com"
-ecr_repository_url = "647187952873.dkr.ecr.us-east-1.amazonaws.com/demo-app"
-cluster_name= "demo-aks"
-cluster_arn = "arn:aws:eks:us-east-1:647187952873:cluster/demo-aks"
