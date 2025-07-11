@@ -13,18 +13,18 @@ import saludo.saludo_pb2      as saludo_pb2
 import saludo.saludo_pb2_grpc as saludo_pb2_grpc
 
 def run():
-    # Carga certificado
+    target = os.environ.get("GRPC_TARGET", "grpc.local:50051")
+    # Siempre usaremos canal seguro
+    # 1) Carga certificado raíz
     with open("certs/server.crt", "rb") as f:
         trusted_certs = f.read()
     creds = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
 
-    # Target ALB o local
-    target = os.environ.get("GRPC_TARGET", "localhost:50051")
-    options = ()
-    if target.endswith(":443"):
-        options = (("grpc.ssl_target_name_override", "grpc.local"),)
-
+    # 2) Forzamos SNI/hostname override a grpc.local
+    options = (("grpc.ssl_target_name_override", "grpc.local"),)
+    print("[DEBUG] Canal SEGURO a", target, "SNI=grpc.local")
     channel = grpc.secure_channel(target, creds, options)
+
     stub = saludo_pb2_grpc.SaludadorStub(channel)
     resp = stub.Saludar(saludo_pb2.SaludoRequest(nombre="Jean"))
     print(resp.mensaje)
