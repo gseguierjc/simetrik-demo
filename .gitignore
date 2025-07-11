@@ -7,8 +7,8 @@ override.tf
 override.tf.json
 
 # TLS certs
-certs/*.key
-certs/*.crt
+grpc/certs/*.key
+grpc/certs/*.crt
 
 # Python
 __pycache__/
