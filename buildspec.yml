@@ -22,23 +22,23 @@ phases:
       - git init
       - git remote add origin $GIT_REPO_URL
       - git config core.sparseCheckout true
-      - printf 'grpc/*' >> .git/info/sparse-checkout
+      - printf 'grpc_demo/*' >> .git/info/sparse-checkout
       - git pull --depth=1 origin $GIT_BRANCH
       - cd ..
-      - mv project/grpc grpc
+      - mv project/grpc_demo grpc_demo
       - rm -rf project
       - echo "Creando directorio para certificados"
-      - mkdir -p grpc/certs
+      - mkdir -p grpc_demo/certs
  
-      - echo "Generando CA y certificados TLS en grpc/certs"
+      - echo "Generando CA y certificados TLS en grpc_demo/certs"
       - openssl genrsa -out grpc/certs/ca.key 2048
-      - openssl req -x509 -new -nodes -key grpc/certs/ca.key -sha256 -days 365 -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=MyCA" -out grpc/certs/ca.crt
-      - openssl genrsa -out grpc/certs/service-server.key 2048
-      - openssl req -new -key grpc/certs/service-server.key -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-server" -out grpc/certs/service-server.csr
-      - openssl x509 -req -in grpc/certs/service-server.csr -CA grpc/certs/ca.crt -CAkey grpc/certs/ca.key -CAcreateserial -days 365 -sha256 -out grpc/certs/service-server.crt
-      - openssl genrsa -out grpc/certs/service-client.key 2048
-      - openssl req -new -key grpc/certs/service-client.key -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-client" -out grpc/certs/service-client.csr
-      - openssl x509 -req -in grpc/certs/service-client.csr -CA grpc/certs/ca.crt -CAkey grpc/certs/ca.key -CAcreateserial -days 365 -sha256 -out grpc/certs/service-client.crt
+      - openssl req -x509 -new -nodes -key grpc_demo/certs/ca.key -sha256 -days 365 -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=MyCA" -out grpc_demo/certs/ca.crt
+      - openssl genrsa -out grpc_demo/certs/service-server.key 2048
+      - openssl req -new -key grpc_demo/certs/service-server.key -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-server" -out grpc_demo/certs/service-server.csr
+      - openssl x509 -req -in grpc_demo/certs/service-server.csr -CA grpc_demo/certs/ca.crt -CAkey grpc_demo/certs/ca.key -CAcreateserial -days 365 -sha256 -out grpc_demo/certs/service-server.crt
+      - openssl genrsa -out grpc_demo/certs/service-client.key 2048
+      - openssl req -new -key grpc_demo/certs/service-client.key -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-client" -out grpc_demo/certs/service-client.csr
+      - openssl x509 -req -in grpc_demo/certs/service-client.csr -CA grpc_demo/certs/ca.crt -CAkey grpc_demo/certs/ca.key -CAcreateserial -days 365 -sha256 -out grpc_demo/certs/service-client.crt
   
       - echo "Login en Amazon ECR"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
@@ -48,10 +48,10 @@ phases:
   build:
     commands:
       - echo "Construyendo Docker image service-server"
-      - docker build --build-arg CERT_DIR=certs -t $ECR_REPO_SERVER:server -f grpc/Dockerfile.server grpc
+      - docker build --build-arg CERT_DIR=certs -t $ECR_REPO_SERVER:server -f grpc_demo/Dockerfile.server grpc_demo
       - docker tag $ECR_REPO_SERVER:server $REPO_URI_SERVER:server
       - echo "Construyendo Docker image service-client"
-      - docker build --build-arg CERT_DIR=certs -t $ECR_REPO_CLIENT:client -f grpc/Dockerfile.client grpc
+      - docker build --build-arg CERT_DIR=certs -t $ECR_REPO_CLIENT:client -f grpc_demo/Dockerfile.client grpc
       - docker tag $ECR_REPO_CLIENT:client $REPO_URI_CLIENT:client
 
   post_build:

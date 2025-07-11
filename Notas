@@ -5,3 +5,4 @@ aws eks update-kubeconfig --name demo-eks --region us-east-1
 kubectl config current-context   # Debe mostrar algo como arn:aws:eks:us-east-1:…/cluster/demo-eks
 
 
+aws codebuild start-build --project-name demo-grpc-build
