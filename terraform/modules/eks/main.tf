@@ -17,7 +17,7 @@ data "terraform_remote_state" "network" {
   }
 }
 
-data "terraform_remote_state" "iam-role" {
+data "terraform_remote_state" "iam" {
   backend = "s3"
   config = {
     bucket = "demo-eks-state-bucket-647187952873-7632948f"
@@ -42,8 +42,6 @@ resource "aws_ecr_repository" "app" {
     Name = "${var.name}-ecr"
   }
 }
-
-
 
 module "eks_cluster" {
   source          = "terraform-aws-modules/eks/aws"
@@ -95,4 +93,16 @@ data "aws_eks_cluster" "this" {
 
 data "aws_eks_cluster_auth" "this" {
   name = module.eks_cluster.cluster_name
+}
+data "tls_certificate" "eks_ca" {
+  # Descarga el certificado TLS directamente del issuer OIDC
+  url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
+}
+
+
+resource "aws_iam_openid_connect_provider" "this" {
+  # Usa la URL completa del issuer OIDC (incluye https://)
+  url             = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.eks_ca.certificates[0].sha1_fingerprint]
 }

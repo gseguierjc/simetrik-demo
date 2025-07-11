@@ -15,20 +15,11 @@ class Saludador(saludo_pb2_grpc.SaludadorServicer):
 
 def serve():
     # Carga la clave privada y el certificado
-    certs_dir = os.path.join(os.path.dirname(__file__), 'certs')
-    with open(os.path.join(certs_dir, 'service-server.key'), 'rb') as f:
-        private_key = f.read()
-    with open(os.path.join(certs_dir, 'service-server.crt'), 'rb') as f:
-        certificate_chain = f.read()
-
-    # Credenciales TLS para el servidor
-    server_credentials = grpc.ssl_server_credentials(
-        ((private_key, certificate_chain),)
-    )
+    server.add_insecure_port('[::]:50051')
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     saludo_pb2_grpc.add_SaludadorServicer_to_server(Saludador(), server)
-    server.add_secure_port('[::]:50051', server_credentials)
+    server.add_secure_port('[::]:50051')
     print("Servidor TLS escuchando en el puerto 50051...")
     server.start()
     server.wait_for_termination()

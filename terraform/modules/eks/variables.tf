@@ -22,13 +22,13 @@ variable "node_instance_type" {
 variable "desired_capacity" {
   description = "capacidad deseada de nodos EKS"
   type        = number
-  default     = 1 
+  default     = 2
 }
 
 variable "max_capacity" {
   description = "capacidad maxima deseada de nodos EKS"
   type        = number
-  default     = 1
+  default     = 3
 }
 
 variable "min_capacity" {

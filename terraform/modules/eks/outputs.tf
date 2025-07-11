@@ -33,3 +33,13 @@ output "cluster_auth_token" {
   value       = data.aws_eks_cluster_auth.this.token
   sensitive   = true
 }
+
+output "oidc_provider_arn" {
+  description = "ARN del proveedor OIDC creado para el EKS"
+  value       = aws_iam_openid_connect_provider.this.arn
+}
+
+output "oidc_issuer_url" {
+  description = "URL del issuer OIDC"
+  value       = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
+}

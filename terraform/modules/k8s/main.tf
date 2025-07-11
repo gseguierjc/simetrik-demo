@@ -126,3 +126,29 @@ resource "kubernetes_deployment" "client" {
     }
   }
 }
+
+
+resource "kubernetes_service" "service_server" {
+  metadata {
+    name      = "service-server"
+    namespace = kubernetes_namespace.grpc_demo_server.metadata[0].name
+    labels = {
+      app = "service-server"
+    }
+  }
+
+  spec {
+    selector = {
+      app = "service-server"
+    }
+
+    port {
+      name        = "grpc"
+      port        = 50051
+      target_port = 50051
+    }
+
+    type = "LoadBalancer"
+  }
+}
+
