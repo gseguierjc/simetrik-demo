@@ -57,11 +57,11 @@ phases:
   post_build:
     commands:
       - echo "Pushing imágenes a ECR"
-      - docker push $REPO_URI_SERVER:latest
-      - docker push $REPO_URI_CLIENT:latest
+      - docker push $REPO_URI_SERVER:server
+      - docker push $REPO_URI_CLIENT:client
       - echo "Creando imagedefinitions.json"
-      - printf '[{"name":"service-server","imageUri":"%s"}]' $REPO_URI_SERVER:latest > imagedefinitions.json
-      - printf '[{"name":"service-client","imageUri":"%s"}]' $REPO_URI_CLIENT:latest >> imagedefinitions.json
+      - printf '[{"name":"service-server","imageUri":"%s"}]' $REPO_URI_SERVER:server > imagedefinitions.json
+      - printf '[{"name":"service-client","imageUri":"%s"}]' $REPO_URI_CLIENT:client >> imagedefinitions.json
 
 artifacts:
   files:
