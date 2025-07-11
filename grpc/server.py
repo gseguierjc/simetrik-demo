@@ -16,9 +16,9 @@ class Saludador(saludo_pb2_grpc.SaludadorServicer):
 def serve():
     # Carga la clave privada y el certificado
     certs_dir = os.path.join(os.path.dirname(__file__), 'certs')
-    with open(os.path.join(certs_dir, 'server.key'), 'rb') as f:
+    with open(os.path.join(certs_dir, 'service-server.key'), 'rb') as f:
         private_key = f.read()
-    with open(os.path.join(certs_dir, 'server.crt'), 'rb') as f:
+    with open(os.path.join(certs_dir, 'service-server.crt'), 'rb') as f:
         certificate_chain = f.read()
 
     # Credenciales TLS para el servidor

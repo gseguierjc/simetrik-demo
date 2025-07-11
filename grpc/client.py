@@ -10,7 +10,7 @@ from saludo import saludo_pb2, saludo_pb2_grpc
 def run():
     # Carga el certificado del servidor
     certs_dir = os.path.join(os.path.dirname(__file__), 'certs')
-    with open(os.path.join(certs_dir, 'server.crt'), 'rb') as f:
+    with open(os.path.join(certs_dir, 'service-server.crt'), 'rb') as f:
         trusted_certs = f.read()
 
     # Credenciales TLS para el cliente
