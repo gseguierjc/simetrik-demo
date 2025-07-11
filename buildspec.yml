@@ -27,22 +27,22 @@ phases:
       - cd ..
       - mv project/grpc grpc
       - rm -rf project
+      - echo "Creando directorio para certificados"
+      - mkdir -p grpc/certs
+      - echo "Generando CA y certificados TLS en grpc/certs"
+      - openssl genrsa -out grpc/certs/ca.key 2048
+      - openssl req -x509 -new -nodes -key grpc/certs/ca.key -sha256 -days 365 -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=MyCA" -out grpc/certs/ca.crt
+      - openssl genrsa -out grpc/certs/service-server.key 2048
+      - openssl req -new -key grpc/certs/service-server.key -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-server" -out grpc/certs/service-server.csr
+      - openssl x509 -req -in grpc/certs/service-server.csr -CA grpc/certs/ca.crt -CAkey grpc/certs/ca.key -CAcreateserial -days 365 -sha256 -out grpc/certs/service-server.crt
+      - openssl genrsa -out grpc/certs/service-client.key 2048
+      - openssl req -new -key grpc/certs/service-client.key -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-client" -out grpc/certs/service-client.csr
+      - openssl x509 -req -in grpc/certs/service-client.csr -CA grpc/certs/ca.crt -CAkey grpc/certs/ca.key -CAcreateserial -days 365 -sha256 -out grpc/certs/service-client.crt
       - echo "Login en Amazon ECR"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-      - echo "Definiendo URIs de repositorios"
       - export REPO_URI_SERVER=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_SERVER
       - export REPO_URI_CLIENT=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_CLIENT
-      - echo "Generando CA y certificados TLS"
-      - mkdir -p certs
-      - openssl genrsa -out certs/ca.key 2048
-      - openssl req -x509 -new -nodes -key certs/ca.key -sha256 -days 365 -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=MyCA" -out certs/ca.crt
-      - openssl genrsa -out certs/service-server.key 2048
-      - openssl req -new -key certs/service-server.key -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-server" -out certs/service-server.csr
-      - openssl x509 -req -in certs/service-server.csr -CA certs/ca.crt -CAkey certs/ca.key -CAcreateserial -days 365 -sha256 -out certs/service-server.crt
-      - openssl genrsa -out certs/service-client.key 2048
-      - openssl req -new -key certs/service-client.key -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-client" -out certs/service-client.csr
-      - openssl x509 -req -in certs/service-client.csr -CA certs/ca.crt -CAkey certs/ca.key -CAcreateserial -days 365 -sha256 -out certs/service-client.crt
-      - mv certs grpc/certs
+      
   build:
     commands:
       - echo "Construyendo Docker image service-server"
