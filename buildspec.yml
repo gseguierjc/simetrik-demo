@@ -31,15 +31,8 @@ phases:
       - mkdir -p grpc_demo/certs
       - echo " Login en Docker Hub…"
       - echo $DOCKERHUB_PASSWORD \
-          | docker login --username gseguierho --password-stdin gkv1xnc.ate6UZX!cak
-      - echo " Login en ECR…"
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION \
-          | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-      # (Opcional) crea el repositorio si no existe
-      - |
-        if ! aws ecr describe-repositories --repository-names $REPOSITORY_NAME >/dev/null 2>&1; then
-          aws ecr create-repository --repository-name $REPOSITORY_NAME
-        fi
+          | docker login --username gseguierho --password gkv1xnc.ate6UZX!cak
+
       - echo "Login en Amazon ECR"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - echo "Definiendo URIs de repositorios"
