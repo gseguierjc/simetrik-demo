@@ -20,9 +20,9 @@ def serve():
     saludo_pb2_grpc.add_SaludadorServicer_to_server(Saludador(), server)
 
     # Carga clave privada y certificado (auto-firmado)
-    with open("/app/certs/server.key", "rb") as f:
+    with open("/app/grpc_demo/certs/server.key", "rb") as f:
         private_key = f.read()
-    with open("/app/certs/server.crt", "rb") as f:
+    with open("/app/grpc_demo/certs/server.crt", "rb") as f:
         certificate_chain = f.read()
 
     # Credenciales TLS
