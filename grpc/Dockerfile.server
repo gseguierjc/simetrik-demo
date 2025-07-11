@@ -9,7 +9,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY server.py .
-COPY certs/ certs/
+COPY grpc/certs/ certs/
 
 # 4) Exponer puerto gRPC (ajústalo si tu server escucha otro)
 EXPOSE 50051
