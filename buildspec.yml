@@ -49,10 +49,10 @@ phases:
     commands:
       - echo "Construyendo Docker image service-server"
       - docker build --build-arg CERT_DIR=certs -t $ECR_REPO_SERVER -f grpc/Dockerfile.server grpc
-      - docker tag $ECR_REPO_SERVER:latest $REPO_URI_SERVER:latest
+      - docker tag $ECR_REPO_SERVER:server $REPO_URI_SERVER:server
       - echo "Construyendo Docker image service-client"
       - docker build --build-arg CERT_DIR=certs -t $ECR_REPO_CLIENT -f grpc/Dockerfile.client grpc
-      - docker tag $ECR_REPO_CLIENT:latest $REPO_URI_CLIENT:latest
+      - docker tag $ECR_REPO_CLIENT:client $REPO_URI_CLIENT:client
 
   post_build:
     commands:
