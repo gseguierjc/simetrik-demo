@@ -91,6 +91,13 @@ data "aws_eks_cluster" "this" {
 }
 
 
+data "aws_security_group" "control_plane" {
+  # Aquí usamos tu data.aws_eks_cluster.eks que ya existe
+ id = data.aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
+
+}
+
+
 data "aws_eks_cluster_auth" "this" {
   name = module.eks_cluster.cluster_name
 }
@@ -105,4 +112,14 @@ resource "aws_iam_openid_connect_provider" "this" {
   url             = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = [data.tls_certificate.eks_ca.certificates[0].sha1_fingerprint]
+}
+
+resource "aws_security_group_rule" "allow_cp_to_webhook" {
+  description              = "Allow control plane  webhook 9443"
+  type                     = "ingress"
+  from_port                = 9443
+  to_port                  = 9443
+  protocol                 = "tcp"
+  security_group_id        = module.eks_cluster.node_security_group_id
+  source_security_group_id = data.aws_security_group.control_plane.id
 }

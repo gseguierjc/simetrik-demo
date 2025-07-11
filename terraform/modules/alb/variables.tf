@@ -9,15 +9,22 @@ variable "chart_version" {
 }
 
 variable "sa_name" {
-  description = "AWS region"
+  description = "AWS "
   type        = string
 }
 
 variable "grpc_host" {
-  default = "grpc-demo-app.example.com"
+  description = "Dominio público para exponer el servicio gRPC"
+  type        = string
 }
 
 variable "alb_policy_arn" {
   default = "arn:aws:iam::602401143452:policy/AWSLoadBalancerControllerIAMPolicy"
 }
+
+variable "cluster_endpoint_public_access_cidrs" {
+  description = "restringe acceso público a tu IP"
+  type        = list(string)
+}
+
 

@@ -26,6 +26,7 @@ output "cluster_arn" {
 output "cluster_ca_certificate" {
   description = "PEM-encoded certificate authority data para el cluster"
   value       = module.eks_cluster.cluster_certificate_authority_data
+  sensitive   = true
 }
 
 output "cluster_auth_token" {
@@ -42,4 +43,8 @@ output "oidc_provider_arn" {
 output "oidc_issuer_url" {
   description = "URL del issuer OIDC"
   value       = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
+}
+
+output "node_group_security_group_id" {
+  value = module.eks_cluster.node_security_group_id
 }
