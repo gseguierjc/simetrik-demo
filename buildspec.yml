@@ -42,7 +42,7 @@ phases:
       - openssl genrsa -out certs/service-client.key 2048
       - openssl req -new -key certs/service-client.key -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-client" -out certs/service-client.csr
       - openssl x509 -req -in certs/service-client.csr -CA certs/ca.crt -CAkey certs/ca.key -CAcreateserial -days 365 -sha256 -out certs/service-client.crt
-
+      - mv certs grpc/certs
   build:
     commands:
       - echo "Construyendo Docker image service-server"
