@@ -59,6 +59,7 @@ module "eks_cluster" {
   cluster_endpoint_public_access        = true  
   cluster_endpoint_private_access       = true  
   cluster_endpoint_public_access_cidrs  = var.cluster_endpoint_public_access_cidrs # restringe acceso público a tu IP
+  
 
  access_entries = {
     jean = {

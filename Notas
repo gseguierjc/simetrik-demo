@@ -6,3 +6,15 @@ kubectl config current-context   # Debe mostrar algo como arn:aws:eks:us-east-1:
 
 
 aws codebuild start-build --project-name demo-grpc-build
+
+kubectl -n grpc-demo-server get pods -o wide
+ kubectl -n grpc-demo-server describe pod service-server-775d56f5fb-vmdtj
+ kubectl -n grpc-demo-server logs service-server-586ddc95f4-xpcdd
+ kubectl -n grpc-demo-server delete pod service-server-775d56f5fb-vmdtj
+
+ $ kubectl rollout restart deployment service-server -n grpc-demo-server
+kubectl rollout restart deployment service-client -n grpc-demo-client
+
+
+kubectl -n grpc-demo-client rollout restart deployment service-client
+kubectl -n grpc-demo-client rollout restart deployment service-server
