@@ -1,1 +1,7 @@
 https://github.com/gseguierjc/simetrik-demo
+
+
+aws eks update-kubeconfig --name demo-eks --region us-east-1
+kubectl config current-context   # Debe mostrar algo como arn:aws:eks:us-east-1:…/cluster/demo-eks
+
+

@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'generated'))
 
 import grpc
-from saludo import saludo_pb2, saludo_pb2_grpc
+from .generated.saludo import saludo_pb2, saludo_pb2_grpc
 
 def run():
     # Carga el certificado del servidor

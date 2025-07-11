@@ -16,7 +16,7 @@ variable "cluster_version" {
 variable "node_instance_type" {
   description = "Tipo de instancia EC2 para los nodos de EKS "
   type        = string
-  default     = "t2.micro"
+  default     = "t2.medium"
 }
 
 variable "desired_capacity" {
@@ -28,13 +28,13 @@ variable "desired_capacity" {
 variable "max_capacity" {
   description = "capacidad maxima deseada de nodos EKS"
   type        = number
-  default     = 1 
+  default     = 1
 }
 
 variable "min_capacity" {
   description = "capacidad minima deseada de nodos EKS"
   type        = number
-  default     = 1 
+  default     = 1
 }
 
 variable "cluster_endpoint_public_access_cidrs" {

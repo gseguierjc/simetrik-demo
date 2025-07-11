@@ -8,7 +8,6 @@ terraform {
   }
 }
 
-
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
@@ -43,6 +42,8 @@ resource "aws_ecr_repository" "app" {
     Name = "${var.name}-ecr"
   }
 }
+
+
 
 module "eks_cluster" {
   source          = "terraform-aws-modules/eks/aws"
@@ -84,4 +85,13 @@ eks_managed_node_groups = {
   tags = {
     Name = var.name
   }
+}
+
+data "aws_eks_cluster" "this" {
+  name = module.eks_cluster.cluster_name
+}
+
+
+data "aws_eks_cluster_auth" "this" {
+  name = module.eks_cluster.cluster_name
 }

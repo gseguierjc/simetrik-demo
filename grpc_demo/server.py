@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'generated'))
 
 import grpc
 from concurrent import futures
-from saludo import saludo_pb2, saludo_pb2_grpc
+from .generated.saludo import saludo_pb2, saludo_pb2_grpc
 
 class Saludador(saludo_pb2_grpc.SaludadorServicer):
     def Saludar(self, request, context):
