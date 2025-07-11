@@ -5,8 +5,8 @@ env:
   variables:
     AWS_ACCOUNT_ID: "647187952873"
     AWS_DEFAULT_REGION: "us-east-1"
-    ECR_REPO_SERVER: "python-service-server"
-    ECR_REPO_CLIENT: "python-service-client"
+    ECR_REPO_SERVER: "demo-app"
+    ECR_REPO_CLIENT: "demo-app"
     GIT_REPO_URL: "https://github.com/gseguierjc/simetrik-demo"
     GIT_BRANCH: "main"
 
