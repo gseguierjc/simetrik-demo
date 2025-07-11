@@ -1,0 +1,6 @@
+name ="demo"
+grpc_security_group_id = "sg-03fe951bd41e5063f"
+ecr_repository_url = "647187952873.dkr.ecr.us-east-1.amazonaws.com/demo-app"
+codebuild_buildspec_path = "buildspec.yml"
+cluster_version          = "1.32"
+vpc_id = "vpc-00f6dcda0cccbf0eb"

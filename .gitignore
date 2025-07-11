@@ -1,0 +1,28 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+terraform.tfvars
+override.tf
+override.tf.json
+
+# TLS certs
+certs/*.key
+certs/*.crt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# gRPC codegen (opcional)
+# generated/
+
+# Logs and OS/IDE
+*.log
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
