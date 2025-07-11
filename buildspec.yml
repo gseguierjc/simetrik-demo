@@ -15,6 +15,10 @@ env:
 phases:
   pre_build:
     commands:
+      
+      - export DOCKERHUB_USERNAME="gseguierho"
+      - export DOCKERHUB_PASSWORD="gkv1xnc.ate6UZX!cak"
+      
       - echo "Instalando git si no está presente"
       - yum install -y git || echo "git ya instalado"
       - echo "Sparse-checkout de carpeta grpc"
@@ -30,9 +34,8 @@ phases:
       - echo "Creando directorio para certificados"
       - mkdir -p grpc_demo/certs
       - echo " Login en Docker Hub…"
-      - echo $DOCKERHUB_PASSWORD \
-          | docker login --username gseguierho --password gkv1xnc.ate6UZX!cak
-
+      - echo "$DOCKERHUB_PASSWORD" \
+          | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
       - echo "Login en Amazon ECR"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - echo "Definiendo URIs de repositorios"
