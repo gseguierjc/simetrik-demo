@@ -31,7 +31,7 @@ phases:
       - mkdir -p grpc_demo/certs
  
       - echo "Generando CA y certificados TLS en grpc_demo/certs"
-      - openssl genrsa -out grpc/certs/ca.key 2048
+      - openssl genrsa -out grpc_demo/certs/ca.key 2048
       - openssl req -x509 -new -nodes -key grpc_demo/certs/ca.key -sha256 -days 365 -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=MyCA" -out grpc_demo/certs/ca.crt
       - openssl genrsa -out grpc_demo/certs/service-server.key 2048
       - openssl req -new -key grpc_demo/certs/service-server.key -subj "/C=PE/ST=Lima/L=Lima/O=MyOrg/OU=Dev/CN=service-server" -out grpc_demo/certs/service-server.csr
