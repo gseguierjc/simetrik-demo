@@ -5,7 +5,7 @@ COPY grpc_demo/ grpc_demo/
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
+COPY certs/ grpc_demo/certs/
 
 # (Opcional) si tu client no necesita exponer puertos, puedes omitir EXPOSE
 

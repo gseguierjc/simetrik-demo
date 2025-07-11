@@ -11,7 +11,7 @@ COPY grpc_demo/ grpc_demo/
 # instala dependencias
 COPY grpc_demo/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
+COPY certs/ grpc_demo/certs/
 
 EXPOSE 50051
 
