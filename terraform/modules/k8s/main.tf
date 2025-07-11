@@ -52,7 +52,7 @@ resource "kubernetes_deployment" "server" {
         container {
           name  = "service-server"
           image = "${data.terraform_remote_state.eks.outputs.ecr_repository_url}:server"
-
+          image_pull_policy = "Always"
           port {
             container_port = 50051
           }
@@ -103,7 +103,7 @@ resource "kubernetes_deployment" "client" {
         container {
           name  = "service-client"
           image = "${data.terraform_remote_state.eks.outputs.ecr_repository_url}:client"
-
+          image_pull_policy = "Always"
           port {
             container_port = 50051
           }
