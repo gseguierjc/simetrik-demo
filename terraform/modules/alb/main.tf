@@ -52,7 +52,6 @@ locals {
   )
 }
 
-
 # 2. Remote state: network & EKS
 data "terraform_remote_state" "network" {
   backend = "s3"
@@ -72,8 +71,6 @@ data "terraform_remote_state" "eks" {
   }
 }
 
-
-
 resource "kubernetes_ingress_v1" "grpc_ingress" {
    depends_on = [
     helm_release.alb_controller
@@ -90,8 +87,6 @@ resource "kubernetes_ingress_v1" "grpc_ingress" {
       "alb.ingress.kubernetes.io/certificate-arn"          = aws_acm_certificate.selfsigned_import.arn
       "alb.ingress.kubernetes.io/load-balancer-name"     = local.alb_name
       "alb.ingress.kubernetes.io/tags"                   =  "environment=dev,app=grpc-demo"
-      
-
     }
   }
   spec {
@@ -113,10 +108,6 @@ resource "kubernetes_ingress_v1" "grpc_ingress" {
     }
   }
 }
-
-
-
-
 
 # 3. TLS key + self-signed certificate for grpc.local
 resource "tls_private_key" "grpc_key" {
@@ -278,14 +269,6 @@ resource "aws_route53_zone" "demo_internal" {
   name = "demo.internal"
 }
 
-# resource "aws_route53_zone" "grpc_zone" {
-#   name    = var.grpc_host
-#   comment = "Zona pública para gRPC vía ALB"
-#   tags    = { Environment = "dev" }
-# }
-
-
-
 # 5. Route53 zones
 resource "aws_route53_zone" "local" {
  name = "internal"               # en vez de "local"
@@ -326,6 +309,7 @@ data "aws_lb" "grpc_alb" {
   )
   depends_on = [ kubernetes_ingress_v1.grpc_ingress ]
 }
+
 resource "aws_security_group_rule" "allow_https_from_my_ip" {
  for_each = {
     for sg in data.aws_lb.grpc_alb.security_groups :

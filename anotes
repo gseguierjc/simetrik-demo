@@ -12,3 +12,15 @@ for module in network s3 ci eks; do
   terraform apply -var-file="$TFVARS" -auto-approve
   cd - > /dev/null
 done
+
+
+
+eks ( con ip de admin)
+alb
+>dns
+
+
+╷
+│ Error: ECR Repository (demo-app) not empty, consider using force_delete: operation error ECR: DeleteRepository, https response error StatusCode: 400, RequestID: 0bbf5719-ddc8-49f4-af5b-5f8ddb9c7d4a, RepositoryNotEmptyException: The repository with name 'demo-app' in registry with id '647187952873' cannot be deleted because it still contains images
+│
+│
