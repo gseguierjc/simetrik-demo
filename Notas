@@ -43,6 +43,8 @@ kubectl -n grpc-demo-server port-forward pod/<pod-name> 50051:443
 
 
 
+curl -v --http2 -k -H "Host: grpc.local" \
+  https://k8s-grpcdemo-grpcingr-eda0cfc6de-42444441.us-east-1.elb.amazonaws.com/grpc.health.v1.Health/Check
 
 
 

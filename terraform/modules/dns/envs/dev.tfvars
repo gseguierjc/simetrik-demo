@@ -1,6 +1,0 @@
-name ="demo"
-cluster_version  = "1.32"
-region = "us-east-1"
-alb_name = "aws-load-balancer-controller-eks-sa"
-zone_id_grpc="us-east-1"
-grpc_host = "grpc-demo-app.example.com"
