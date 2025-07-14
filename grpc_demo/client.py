@@ -16,7 +16,7 @@ def run():
     target = os.environ.get("GRPC_TARGET", "grpc.local:50051")
     # Siempre usaremos canal seguro
     # 1) Carga certificado raíz
-    with open("certs/server.crt", "rb") as f:
+    with open("/app/grpc_demo/certs/server.crt", "rb") as f:
         trusted_certs = f.read()
     creds = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
 
