@@ -314,7 +314,15 @@ resource "aws_route53_record" "grpc_alias" {
    security_group_id = data.aws_security_group.control_plane.id
  }
 
-
+resource "aws_security_group_rule" "allow_alb_to_nodes_grpc" {
+  description              = "Allow gRPC (50051) from ALB SG to worker node SG"
+  type                     = "ingress"
+  from_port                = 50051
+  to_port                  = 50051
+  protocol                 = "tcp"
+  security_group_id        = data.terraform_remote_state.eks.outputs.node_group_security_group_id
+  source_security_group_id = data.aws_security_group.control_plane.id
+}
 
  resource "aws_security_group_rule" "allow_cp_to_webhook" {
    description              = "Allow control plane  webhook 9443"
@@ -361,15 +369,18 @@ resource "aws_route53_record" "grpc_alias" {
        "kubernetes.io/ingress.class"                        = "alb"
        "alb.ingress.kubernetes.io/scheme"                   = "internet-facing"
        "alb.ingress.kubernetes.io/target-type"              = "ip"
-       "alb.ingress.kubernetes.io/backend-protocol-version" = "GRPC"
+      
+      "alb.ingress.kubernetes.io/backend-protocol"         = "HTTPS"
+      "alb.ingress.kubernetes.io/backend-protocol-version" = "GRPC"
+
        "alb.ingress.kubernetes.io/listen-ports"             = jsonencode([{ HTTPS = 443 }])
        "alb.ingress.kubernetes.io/certificate-arn"          = aws_acm_certificate.selfsigned_import.arn
        "alb.ingress.kubernetes.io/healthcheck-protocol"     = "HTTPS"
-      "alb.ingress.kubernetes.io/healthcheck-port"         = "traffic-port"
-      "alb.ingress.kubernetes.io/healthcheck-path"         = "/grpc.health.v1.Health/Check"
-      "alb.ingress.kubernetes.io/success-codes"            = "0"
-      "alb.ingress.kubernetes.io/healthcheck-interval-seconds" = "15"
-      "alb.ingress.kubernetes.io/healthcheck-timeout-seconds"  = "5"
+       "alb.ingress.kubernetes.io/healthcheck-port"         = "traffic-port"
+       "alb.ingress.kubernetes.io/healthcheck-path"         = "/grpc.health.v1.Health/Check"
+       "alb.ingress.kubernetes.io/success-codes"            = "0"
+       "alb.ingress.kubernetes.io/healthcheck-interval-seconds" = "15"
+       "alb.ingress.kubernetes.io/healthcheck-timeout-seconds"  = "5"
 
        "alb.ingress.kubernetes.io/tags" = "environment=dev,app=grpc-demo"
      }

@@ -13,7 +13,7 @@ import saludo.saludo_pb2      as saludo_pb2
 import saludo.saludo_pb2_grpc as saludo_pb2_grpc
 
 def run():
-    target = os.environ.get("GRPC_TARGET", "demo-eks-grpc-demo-app-1202197144.us-east-1.elb.amazonaws.com:443")
+    target = os.environ.get("GRPC_TARGET", "k8s-grpcdemo-grpcingr-eda0cfc6de-157703590.us-east-1.elb.amazonaws.com:443")
 
     # 1) Carga tu CA autofirmada
     with open("certs/server.crt", "rb") as f:
@@ -31,6 +31,7 @@ def run():
 
     stub = saludo_pb2_grpc.SaludadorStub(channel)
     resp = stub.Saludar(saludo_pb2.SaludoRequest(nombre="Jean"))
+    print(resp)
 
 if __name__ == "__main__":
     run()

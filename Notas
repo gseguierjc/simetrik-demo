@@ -40,3 +40,21 @@ docker run -d \
 
 
 kubectl -n grpc-demo-server port-forward pod/<pod-name> 50051:443
+
+
+
+
+
+
+
+
+
+CLUSTER_NAME=demo-eks
+HOST=$(echo grpc.local)
+aws elbv2 describe-load-balancers \
+  --names demo-eks-grpc-demo-app \
+  --query "LoadBalancers[0].LoadBalancerArn" --output text
+
+
+
+

@@ -7,3 +7,8 @@ output "alb_name" {
                 )
 }
 
+output "alb_dns_name" {
+  description = "DNS público del ALB creado por el Ingress"
+  value       = data.aws_lb.grpc_alb.dns_name
+}
+

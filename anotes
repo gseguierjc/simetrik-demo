@@ -19,7 +19,10 @@ eks ( con ip de admin)
 k8s
 alb
 >dns
-
+helm uninstall aws-load-balancer-controller -n kube-system
+copiar certs 
+export GRPC_TARGET=demo-eks-grpc-demo-app-1202197144.us-east-1.elb.amazonaws.com:443
+python client.py
 
 ╷
 │ Error: ECR Repository (demo-app) not empty, consider using force_delete: operation error ECR: DeleteRepository, https response error StatusCode: 400, RequestID: 0bbf5719-ddc8-49f4-af5b-5f8ddb9c7d4a, RepositoryNotEmptyException: The repository with name 'demo-app' in registry with id '647187952873' cannot be deleted because it still contains images
