@@ -22,10 +22,11 @@ def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     saludo_pb2_grpc.add_SaludadorServicer_to_server(Saludador(), server)
 
-    # 1) Registra el HealthServicer
     health_servicer = health.HealthServicer()
-    # marca tu servicio como SERVING; usa el nombre completo de tu servicio
-    health_servicer.set("saludo.Saludador", health_pb2.HealthCheckResponse_SERVING)
+    health_servicer.set(
+      "saludo.Saludador",
+      health_pb2.HealthCheckResponse.ServingStatus.SERVING
+    )
     health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
 
     # Carga clave privada y certificado (auto-firmado)
