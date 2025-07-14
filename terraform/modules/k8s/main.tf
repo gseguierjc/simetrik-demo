@@ -96,20 +96,6 @@ resource "kubernetes_deployment" "server" {
           port {
             container_port = 50051
           }
-
-        #   volume_mount {
-        #     name       = "certs"
-        #     mount_path = "/app/certs"
-        #     read_only  = true
-        #   }
-        # }
-
-        # volume {
-        #   name = "certs"
-
-        #   secret {
-        #     secret_name = kubernetes_secret.grpc_certs.metadata[0].name
-        #   }
         }
       }
     }
@@ -117,55 +103,55 @@ resource "kubernetes_deployment" "server" {
 }
 
 
-resource "kubernetes_deployment" "client" {
-  metadata {
-    name      = "service-client"
-     namespace = kubernetes_namespace.grpc_demo_client.metadata[0].name
-  }
+# resource "kubernetes_deployment" "client" {
+#   metadata {
+#     name      = "service-client"
+#      namespace = kubernetes_namespace.grpc_demo_client.metadata[0].name
+#   }
 
-  spec {
-    replicas = 1
+#   spec {
+#     replicas = 1
 
-    selector {
-      match_labels = {
-        app = "service-client"
-      }
-    }
+#     selector {
+#       match_labels = {
+#         app = "service-client"
+#       }
+#     }
 
-    template {
-      metadata {
-        labels = {
-          app = "service-client"
-        }
-      }
+#     template {
+#       metadata {
+#         labels = {
+#           app = "service-client"
+#         }
+#       }
 
-      spec {
-        container {
-          name  = "service-client"
-          image = "${data.terraform_remote_state.eks.outputs.ecr_repository_url}:client"
-          image_pull_policy = "Always"
-          port {
-            container_port = 50051
-          }
+#       spec {
+#         container {
+#           name  = "service-client"
+#           image = "${data.terraform_remote_state.eks.outputs.ecr_repository_url}:client"
+#           image_pull_policy = "Always"
+#           port {
+#             container_port = 50051
+#           }
 
-        #   volume_mount {
-        #     name       = "certs"
-        #     mount_path = "/app/certs"
-        #     read_only  = true
-        #   }
-        # }
+#         #   volume_mount {
+#         #     name       = "certs"
+#         #     mount_path = "/app/certs"
+#         #     read_only  = true
+#         #   }
+#         # }
 
-        # volume {
-        #   name = "certs"
+#         # volume {
+#         #   name = "certs"
 
-        #   secret {
-        #     secret_name = kubernetes_secret.grpc_certs.metadata[0].name
-        #   }
-        }
-      }
-    }
-  }
-}
+#         #   secret {
+#         #     secret_name = kubernetes_secret.grpc_certs.metadata[0].name
+#         #   }
+#         }
+#       }
+#     }
+#   }
+# }
 
 
 resource "kubernetes_service" "service_server" {
@@ -188,7 +174,7 @@ resource "kubernetes_service" "service_server" {
       target_port = 50051
     }
 
-    type = "LoadBalancer"
+     type     = "ClusterIP"     
   }
 }
 

@@ -9,6 +9,9 @@ import grpc
 import saludo.saludo_pb2      as saludo_pb2
 import saludo.saludo_pb2_grpc as saludo_pb2_grpc
 
+# Importa el health checking
+from grpc_health.v1 import health, health_pb2_grpc, health_pb2
+
 class Saludador(saludo_pb2_grpc.SaludadorServicer):
     def Saludar(self, request, context):
         mensaje = f"Hola, {request.nombre}!"
@@ -18,6 +21,12 @@ def serve():
     # Crea el servidor gRPC
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     saludo_pb2_grpc.add_SaludadorServicer_to_server(Saludador(), server)
+
+    # 1) Registra el HealthServicer
+    health_servicer = health.HealthServicer()
+    # marca tu servicio como SERVING; usa el nombre completo de tu servicio
+    health_servicer.set("saludo.Saludador", health_pb2.HealthCheckResponse_SERVING)
+    health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
 
     # Carga clave privada y certificado (auto-firmado)
     with open("/app/grpc_demo/certs/server.key", "rb") as f:
@@ -30,7 +39,7 @@ def serve():
         [(private_key, certificate_chain)]
     )
 
-    # Escucha en el puerto 50051 (local) y también en 0.0.0.0:443 (ALB público)
+    # Escucha en el puerto 50051 (interno) y 443 (público)
     server.add_secure_port("[::]:50051", server_credentials)
     server.add_secure_port("[::]:443", server_credentials)
 

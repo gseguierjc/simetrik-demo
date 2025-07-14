@@ -37,3 +37,6 @@ docker run -d \
   -v $(pwd)/server.crt:/app/server.crt \
   -v $(pwd)/server.key:/app/server.key \
 647187952873.dkr.ecr.us-east-1.amazonaws.com/demo-app:server
+
+
+kubectl -n grpc-demo-server port-forward pod/<pod-name> 50051:443

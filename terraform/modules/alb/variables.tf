@@ -5,7 +5,7 @@ variable "region" {
 variable "chart_version" {
   description = "chart_version"
   type        = string
-  default = "1.13.0"
+  default = "1.13.3"
 }
 
 variable "sa_name" {

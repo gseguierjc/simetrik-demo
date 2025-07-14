@@ -41,16 +41,6 @@ provider "kubernetes" {
   config_path = "~/.kube/config"
 }
 
-locals {
-   depends_on = [
-    helm_release.alb_controller
-  ]
-  alb_name = substr(
-    "${data.terraform_remote_state.eks.outputs.cluster_name}-${element(split(".", var.grpc_host), 0)}",
-    0,
-    32
-  )
-}
 
 # 2. Remote state: network & EKS
 data "terraform_remote_state" "network" {
@@ -71,42 +61,32 @@ data "terraform_remote_state" "eks" {
   }
 }
 
-resource "kubernetes_ingress_v1" "grpc_ingress" {
-   depends_on = [
-    helm_release.alb_controller
-  ]
-  metadata {
-    name      = "grpc-ingress"
-    namespace = "default"
-    annotations = {
-      "kubernetes.io/ingress.class"                        = "alb"
-      "alb.ingress.kubernetes.io/scheme"                   = "internet-facing"
-      "alb.ingress.kubernetes.io/target-type"              = "ip"
-      "alb.ingress.kubernetes.io/backend-protocol-version" = "GRPC"
-      "alb.ingress.kubernetes.io/listen-ports"             = jsonencode([{ HTTPS = 443 }])
-      "alb.ingress.kubernetes.io/certificate-arn"          = aws_acm_certificate.selfsigned_import.arn
-      "alb.ingress.kubernetes.io/load-balancer-name"     = local.alb_name
-      "alb.ingress.kubernetes.io/tags"                   =  "environment=dev,app=grpc-demo"
-    }
+data "terraform_remote_state" "k8s" {
+  backend = "s3"
+  config = {
+    bucket = "demo-eks-state-bucket-647187952873-7632948f"
+    key    = "k8s/terraform.tfstate"
+    region = "us-east-1"
   }
-  spec {
-    ingress_class_name = "alb"
-    rule {
-      host = var.grpc_host
-      http {
-        path {
-          path     = "/"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = kubernetes_service.grpc.metadata[0].name
-              port { number = 50051 }
-            }
-          }
-        }
-      }
-    }
-  }
+}
+
+
+locals {
+  # La ruta exacta puede variar según la versión del provider
+  alb_dns = try(
+    kubernetes_ingress_v1.grpc_ingress.status[0].load_balancer[0].ingress[0].hostname,
+    ""
+  )
+}
+
+# 7. EKS OIDC and IRSA for AWS LB Controller
+data "aws_eks_cluster" "eks" {
+  name = data.terraform_remote_state.eks.outputs.cluster_name
+}
+
+data "aws_security_group" "control_plane" {
+  # Aquí usamos tu data.aws_eks_cluster.eks que ya existe
+ id = data.aws_eks_cluster.eks.vpc_config[0].cluster_security_group_id
 }
 
 # 3. TLS key + self-signed certificate for grpc.local
@@ -146,27 +126,28 @@ resource "aws_acm_certificate" "selfsigned_import" {
 }
 
 
-# 7. EKS OIDC and IRSA for AWS LB Controller
-data "aws_eks_cluster" "eks" {
-  name = data.terraform_remote_state.eks.outputs.cluster_name
-}
+
 
 data "tls_certificate" "eks_oidc" {
   url = data.aws_eks_cluster.eks.identity[0].oidc[0].issuer
 }
 
-resource "aws_iam_openid_connect_provider" "eks_oidc" {
-  url             = data.aws_eks_cluster.eks.identity[0].oidc[0].issuer
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [data.tls_certificate.eks_oidc.certificates[0].sha1_fingerprint]
+
+data "aws_iam_openid_connect_provider" "eks_oidc" {
+  arn = data.terraform_remote_state.k8s.outputs.oidc_provider_arn
 }
+# resource "aws_iam_openid_connect_provider" "eks_oidc" {
+#   url             = data.aws_eks_cluster.eks.identity[0].oidc[0].issuer
+#   client_id_list  = ["sts.amazonaws.com"]
+#   thumbprint_list = [data.tls_certificate.eks_oidc.certificates[0].sha1_fingerprint]
+# }
 
 data "aws_iam_policy_document" "alb_irsa" {
   statement {
     effect  = "Allow"
     principals {
       type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.eks_oidc.arn]
+      identifiers = [data.aws_iam_openid_connect_provider.eks_oidc.arn]
     }
     actions = ["sts:AssumeRoleWithWebIdentity"]
     condition {
@@ -249,13 +230,13 @@ resource "helm_release" "alb_controller" {
 # 9. gRPC Service
 resource "kubernetes_service" "grpc" {
   metadata {
-    name      = "grpc-service"
-    namespace = "default"
+    name      = "grpc-server"
+    namespace = "grpc-demo-server"
     labels    = { app = "grpc-app" }
   }
   spec {
     type     = "ClusterIP"
-    selector = { app = "grpc-app" }
+    selector = { app = "service-server" }
     port {
       name        = "grpc"
       port        = 50051
@@ -278,13 +259,25 @@ resource "aws_route53_zone" "local" {
   tags = { Environment = "dev" }
 }
 
+# resource "aws_route53_record" "grpc_local_alias" {
+#   zone_id = aws_route53_zone.local.zone_id
+#   name    = "grpc.local"
+#   type    = "A"
+#   alias {
+#     name                   = data.aws_lb.grpc_alb.dns_name
+#     zone_id                = data.aws_lb.grpc_alb.zone_id
+#     evaluate_target_health = true
+#   }
+# }
+
 resource "aws_route53_record" "grpc_local_alias" {
   zone_id = aws_route53_zone.local.zone_id
   name    = "grpc.local"
   type    = "A"
+
   alias {
     name                   = data.aws_lb.grpc_alb.dns_name
-    zone_id                = data.aws_lb.grpc_alb.zone_id
+    zone_id                = data.aws_lb.grpc_alb.zone_id    # o usar el HostedZoneID global de ALB
     evaluate_target_health = true
   }
 }
@@ -301,26 +294,123 @@ resource "aws_route53_record" "grpc_alias" {
   }
 }
 
-data "aws_lb" "grpc_alb" {
-  name = substr(
-    "${data.terraform_remote_state.eks.outputs.cluster_name}-${element(split(".", var.grpc_host), 0)}",
-    0,
-    32
-  )
-  depends_on = [ kubernetes_ingress_v1.grpc_ingress ]
+ data "aws_lb" "grpc_alb" {
+   depends_on = [ kubernetes_ingress_v1.grpc_ingress ]
+
+   tags = {
+     environment = "dev"
+    app         = "grpc-demo"
+   }
+ }
+
+
+ resource "aws_security_group_rule" "allow_https_to_alb" {
+   description       = "Allow HTTPS (443) from anywhere to ALB SG"
+   type              = "ingress"
+   from_port         = 443
+   to_port           = 443
+   protocol          = "tcp"
+   cidr_blocks       = ["0.0.0.0/0"]
+   security_group_id = data.aws_security_group.control_plane.id
+ }
+
+
+
+ resource "aws_security_group_rule" "allow_cp_to_webhook" {
+   description              = "Allow control plane  webhook 9443"
+   type                     = "ingress"
+   from_port                = 9443
+  to_port                  = 9443
+  protocol                 = "tcp"
+  security_group_id        = data.aws_security_group.control_plane.id
+  source_security_group_id = data.aws_security_group.control_plane.id
+}
+ resource "kubernetes_secret" "grpc_tls" {
+   metadata {
+     name      = "grpc-tls"
+     namespace = "grpc-demo-server"
+   }
+   type = "kubernetes.io/tls"
+   data = {
+     "tls.crt" = base64encode(
+       aws_acm_certificate.selfsigned_import.certificate_body
+     )
+     "tls.key" = base64encode(
+       aws_acm_certificate.selfsigned_import.private_key
+     )
+   }
+ }
+ # 2) Permitir HTTPS (443) desde internet al Security Group del ALB
+ resource "aws_security_group_rule" "allow_alb_https" {
+   description       = "Allow HTTPS (443) to gRPC ALB"
+   type              = "ingress"
+   from_port         = 443
+   to_port           = 443
+   protocol          = "tcp"
+   cidr_blocks       = ["0.0.0.0/0"]
+   security_group_id = data.aws_security_group.control_plane.id
+ }
+ # 3) Ingress para exponer gRPC por ALB en HTTPS
+ resource "kubernetes_ingress_v1" "grpc_ingress" {
+   depends_on = [ helm_release.alb_controller ]
+
+   metadata {
+     name      = "grpc-ingress"
+     namespace = "grpc-demo-server"
+     annotations = {
+       "kubernetes.io/ingress.class"                        = "alb"
+       "alb.ingress.kubernetes.io/scheme"                   = "internet-facing"
+       "alb.ingress.kubernetes.io/target-type"              = "ip"
+       "alb.ingress.kubernetes.io/backend-protocol-version" = "GRPC"
+       "alb.ingress.kubernetes.io/listen-ports"             = jsonencode([{ HTTPS = 443 }])
+       "alb.ingress.kubernetes.io/certificate-arn"          = aws_acm_certificate.selfsigned_import.arn
+       "alb.ingress.kubernetes.io/healthcheck-protocol"     = "HTTPS"
+      "alb.ingress.kubernetes.io/healthcheck-port"         = "traffic-port"
+      "alb.ingress.kubernetes.io/healthcheck-path"         = "/grpc.health.v1.Health/Check"
+      "alb.ingress.kubernetes.io/success-codes"            = "0"
+      "alb.ingress.kubernetes.io/healthcheck-interval-seconds" = "15"
+      "alb.ingress.kubernetes.io/healthcheck-timeout-seconds"  = "5"
+
+       "alb.ingress.kubernetes.io/tags" = "environment=dev,app=grpc-demo"
+     }
+   }
+
+   spec {
+     # Define TLS para el host grpc.local
+    ingress_class_name = "alb"
+     tls {
+       hosts       = ["grpc.local"]
+       secret_name = kubernetes_secret.grpc_tls.metadata[0].name
+     }
+
+     rule {
+       host = "grpc.local"
+       http {
+         path {
+           path      = "/"
+           path_type = "Prefix"
+           backend {
+             service {
+               name = kubernetes_service.grpc.metadata[0].name
+               port {
+                 number = 50051
+               }
+             }
+           }
+         }
+       }
+     }
+   }
+ }
+
+
+
+resource "local_file" "grpc_crt" {
+  content  = tls_self_signed_cert.grpc_cert.cert_pem
+  filename = "${path.module}/certs/server.crt"
 }
 
-resource "aws_security_group_rule" "allow_https_from_my_ip" {
- for_each = {
-    for sg in data.aws_lb.grpc_alb.security_groups :
-    sg => sg
-  }
-
-  description       = "Allow HTTPS (443) from my local IP to the gRPC ALB"
-  type              = "ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = var.cluster_endpoint_public_access_cidrs
-  security_group_id = each.value
+resource "local_file" "grpc_key" {
+  content  = tls_private_key.grpc_key.private_key_pem
+  filename = "${path.module}/certs/server.key"
 }
