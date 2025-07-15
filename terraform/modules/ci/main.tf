@@ -52,7 +52,7 @@ resource "aws_iam_role_policy" "codebuild_policy" {
           "eks:DescribeNodegroup",
           "eks:GetToken"
         ]
-        Resource = data.terraform_remote_state.eks.outputs.cluster_arn # var.cluster_arn
+        Resource = data.terraform_remote_state.eks.outputs.cluster_arn
       },
       {
         Effect = "Allow"

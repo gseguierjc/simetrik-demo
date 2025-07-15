@@ -14,7 +14,7 @@ for module in network s3 ci eks; do
 done
 
 
-
+ci
 eks ( con ip de admin)
 k8s
 alb

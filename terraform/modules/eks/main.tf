@@ -17,14 +17,6 @@ data "terraform_remote_state" "network" {
   }
 }
 
-data "terraform_remote_state" "iam" {
-  backend = "s3"
-  config = {
-    bucket = "demo-eks-state-bucket-647187952873-7632948f"
-    key    = "iam/terraform.tfstate"
-    region = "us-east-1"
-  }
-}
 
 provider "aws" {
   region = var.region
