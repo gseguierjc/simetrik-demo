@@ -1,0 +1,14 @@
+--- VPCs huérfanas ---
+vpc-00bac311fc1337e7e
+--- Security Groups huérfanos ---
+sg-014556140bf4ac885
+sg-0129b928910f6743a
+sg-00560a9e69a71cfbf
+sg-04fa5a457e8bcc7d2
+sg-0f5a0e742c48e5847
+--- S3 buckets huérfanos ---
+demo-eks-state-bucket-647187952873-7632948f
+--- ALBs huérfanos ---
+--- Route53 zones huérfanas ---
+local
+--- EKS clusters huérfanos ---
