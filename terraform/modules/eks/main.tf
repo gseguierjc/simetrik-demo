@@ -11,7 +11,7 @@ terraform {
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
-    bucket = "demo-eks-state-bucket-647187952873-7632948f"
+    bucket = "demo-eks-state-bucket-647187952873-b4b053c1"
     key    = "network/terraform.tfstate"
     region = "us-east-1"
   }

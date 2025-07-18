@@ -5,7 +5,7 @@ data "aws_caller_identity" "current" {}
 data "terraform_remote_state" "eks" {
   backend = "s3"
   config = {
-    bucket = "demo-eks-state-bucket-647187952873-7632948f"
+    bucket = "demo-eks-state-bucket-647187952873-b4b053c1"
     key    = "eks/terraform.tfstate"
     region = "us-east-1"
   }
